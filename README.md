@@ -1,2 +1,3 @@
-# blog-assets
-Assets for the Blog
+# Assets for the Blog
+
+Repository for the miscellaneous blog assets.
