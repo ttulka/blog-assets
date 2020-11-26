@@ -215,7 +215,7 @@ myshop/
 
 For both scenarios, the separation of concerns is the structure driver. Every module has its own unique role in the final application.
 
-Starters bring Spring Boot auto-configuration, applications Spring Boot application main classes, but all other modules has no Spring Boot concerns or dependencies.
+Starters bring Spring Boot auto-configuration, applications bring Spring Boot application main classes, but all other modules has no Spring Boot concerns or dependencies.
 
 For example, even if the REST module is built upon Spring Web, only the corresponding Spring framework dependency should be included:
 
@@ -273,6 +273,8 @@ This kind of protection based on the basic language features is a great asset to
 === Custom Spring Boot Starter
 
 A typical Spring Boot starter contains auto-configuration code and declared dependencies, and it's extensible via configuration properties in a dedicated namespace (prefix).
+
+Alternatively, auto-configurations can live in a separate module, which a starter includes as its dependency.
 
 By convention, the name of a starter starts with the component name followed by `-spring-boot-starter` suffix:
 
