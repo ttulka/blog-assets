@@ -1,12 +1,12 @@
 = Spring Boot Custom Components
 
-Spring Boot philosophy is to develop applications by composing *independent, modular* and *highly configurable* components. Spring Boot provides several simple mechanisms and conventions for building such components, that could be easily applied on custom projects.
+Spring Boot philosophy is to develop applications by composing *independent, modular* and *highly configurable* components. Spring Boot provides smart and simple mechanisms and conventions for building such components, that could be easily applied in custom projects.
 
 In this post, we will explore those ideas, and show how to create *domain-oriented custom components* in Spring Boot manner.
 
 == What Is Spring Boot
 
-https://spring.io/projects/spring-boot[Spring Boot] takes an *opinionated view* of the https://spring.io[Spring platform] and third-party libraries, this is, all necessary dependencies are included and pre-configured, there is none or very little additional configuration most Spring Boot applications need to add.
+https://spring.io/projects/spring-boot[Spring Boot] takes an *opinionated view* of the https://spring.io[Spring platform] and third-party libraries This means, all necessary dependencies are included and pre-configured, and there is none or very little additional configuration most Spring Boot applications need to add.
 
 Dependencies are consistent with each other and tested in integration.
 
@@ -33,7 +33,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 ----
 
-Alternatively, only dependency management could be used in isolation:
+Alternatively, only the dependency management could be used in isolation:
 
 [source,groovy]
 ----
@@ -96,10 +96,11 @@ It is recommended to locate the application class in a root package above other 
 
 ----
 org.example.myshop
-  + MyShopApplication
-  + catalog
-  + delivery
-  + order
++- MyShopApplication
++- catalog
++- delivery
++- order
+...
 ----
 
 === Starters
@@ -161,6 +162,8 @@ Assembling of components into an application is achieved simply by adding the co
 
 We will use Java packages for structuring code by the domain and Maven modules or Gradle sub-projects for technical cuts.
 
+Every component is a *self-contained business capability service*, exposing multiple artifacts for API and implementation, formed by physical modules.
+
 A typical component source code structure looks like:
 
 ----
@@ -175,7 +178,7 @@ delivery/		-- comp. root
 \- settings.gradle
 ----
 
-Every component is a *self-contained business capability service*, exposing multiple artifacts for API and implementation, formed by physical modules.
+Alternatively, auto-configurations can live in a separate module, which the starter includes as its dependency.
 
 In a single-application scenario a separate module for a Spring Boot application is created on the root level:
 
@@ -184,7 +187,8 @@ myshop/
 +- application/
 +- catalog/
 +- delivery/
-\- order/
++- order/
+...
 ----
 
 In a microservices scenario, each component has its own application module:
@@ -204,13 +208,14 @@ myshop/
 |  +- jdbc/
 |  +- rest/
 |  \- spring-boot-starter/
-\- order/
-   +- application/
-   +- domain/
-   +- events/
-   +- jdbc/
-   +- rest/
-   \- spring-boot-starter/
++- order/
+|  +- application/
+|  +- domain/
+|  +- events/
+|  +- jdbc/
+|  +- rest/
+|  \- spring-boot-starter/
+...
 ----
 
 For both scenarios, the separation of concerns is the structure driver. Every module has its own unique role in the final application.
@@ -221,19 +226,21 @@ For example, even if the REST module is built upon Spring Web, only the correspo
 
 [source,groovy]
 ----
+// rest/build.gradle
 implementation 'org.springframework:spring-web'
 ----
 
-The Spring Boot Web starter will be included into the starter module:
+The Spring Boot Web starter will be included into the starter module only:
 
 [source,groovy]
 ----
+// spring-boot-starter/build.gradle
 implementation 'org.springframework.boot:spring-boot-starter-web'
 ----
 
-=== Packaging
+=== Java Packages
 
-As we build `domain-oriented` components, packaging should be domain-driven as well.
+As we build `domain-oriented` components, packages should be domain-driven as well.
 
 All the modules of a component should share a root package. The modules could be further structured by the domain feature or a technical aspect. Same features should be included in an identical package.
 
@@ -274,8 +281,6 @@ This kind of protection based on the basic language features is a great asset to
 
 A typical Spring Boot starter contains auto-configuration code and declared dependencies, and it's extensible via configuration properties in a dedicated namespace (prefix).
 
-Alternatively, auto-configurations can live in a separate module, which a starter includes as its dependency.
-
 By convention, the name of a starter starts with the component name followed by `-spring-boot-starter` suffix:
 
     org.example.myshop:delivery-spring-boot-starter
@@ -292,11 +297,12 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 
 > Auto-configurations must be loaded that way only. Make sure that they are defined in a specific package space and that they are never the target of component scanning.
 
-Under the hood, auto-configuration is implemented with standard `@Configuration` classes:
+Under the hood, auto-configuration is implemented with standard `@Configuration` classes. Multiple configuration classes could be composed via the `@Import` annotation:
 
 [source,java]
 ----
 @Configuration
+@Import(JdbcDeliveryConfiguration.class)
 class DeliveryConfiguration {
   ...
 }
